@@ -6,14 +6,17 @@ import asyncio
 
 
 load_dotenv()
-prompt = """Analyze this food image and estimate total calories (kcal) and macronutrients (g). Return only valid JSON with no markdown:
+prompt = """Analyze this food image and estimate total calories, macronutrients (g), fiber(g), sugar(g), and satiety index (decimal/numeric e.g. 3.23=323% and 0.47=47%). Return only valid JSON with no markdown:
 {
   "calories_cal": number,
   "macronutrients": {
     "fat_g": number,
     "protein_g": number,
     "carbs_g": number
-  }
+  },
+  "fiber_g": number,
+  "sugar_g": number,
+  "satiety_index": number
 }"""
 
 # The client gets the API key from the environment variable `GEMINI_API_KEY`.
@@ -114,6 +117,9 @@ async def get_nutrition_avg(image_path):
     avg_fat = sum(r['macronutrients']['fat_g'] for r in results) / len(results)
     avg_protein = sum(r['macronutrients']['protein_g'] for r in results) / len(results)
     avg_carbs = sum(r['macronutrients']['carbs_g'] for r in results) / len(results)
+    avg_fiber = sum(r['fiber_g'] for r in results) / len(results)
+    avg_sugar = sum(r['sugar_g'] for r in results) / len(results)
+    avg_satiety = sum(r['satiety_index'] for r in results) / len(results)
 
     # Return finalized JSON
     return {
@@ -123,6 +129,9 @@ async def get_nutrition_avg(image_path):
             "protein_g": round(avg_protein, 1),
             "carbs_g": round(avg_carbs, 1)
         },
+        "fiber_g": round(avg_fiber, 1),
+        "sugar_g": round(avg_sugar, 1),
+        "satiety_index": round(avg_satiety, 2),
         "samples_used": len(results)
     }
 
