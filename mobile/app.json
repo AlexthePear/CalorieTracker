@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "calorietracker.ios",
       "supportsTablet": true
     },
     "android": {

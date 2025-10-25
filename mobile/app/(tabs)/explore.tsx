@@ -1,72 +1,64 @@
-// app/screens/SelectImageScreen.tsx
-import React, { useState } from 'react';
-import { View, Text, Button, Image, StyleSheet } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { useEffect } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
+import { View, Button, StyleSheet } from 'react-native';
 
-const SelectImageScreen = () => {
-  const [image, setImage] = useState<string | null>(null);
-  const [permission, setPermission] = useState<boolean | null>(null);
+// Ensure the auth session is completed when returning from the browser
+WebBrowser.maybeCompleteAuthSession();
 
-  // Function to request camera and photo gallery permissions
-  const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+// Google OAuth endpoints
+const discovery = {
+  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  tokenEndpoint: 'https://oauth2.googleapis.com/token',
+};
 
-    setPermission(status === 'granted' && cameraStatus.status === 'granted');
-  };
+export default function App() {
+  const [request, response, promptAsync] = useAuthRequest(
+    {
+      clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '--- IGNORE ---',  
+      scopes: ['openid', 'profile', 'email'], 
+      redirectUri: makeRedirectUri({
+        scheme: 'your.app',
+      }),
+    },
+    discovery
+  );
 
-  // Function to open the image picker
-  const pickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 1,
-      });
-      if (!result.canceled) {
-        setImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error picking image: ', error);
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { code } = response.params;
+
+      // Send the authorization code to your backend FastAPI server
+      const sendCodeToBackend = async () => {
+        const response = await fetch('https://your-backend-url.com/oauth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code }),  // Send the authorization code to the backend
+        });
+
+        const data = await response.json();
+        console.log('Backend response:', data);
+        // You can now handle the data, store the session, etc.
+      };
+
+      sendCodeToBackend();
     }
-  };
-
-  // Function to take a photo using the camera
-  const takePhoto = async () => {
-    try {
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        quality: 1,
-      });
-      if (!result.canceled) {
-        setImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Error taking photo: ', error);
-    }
-  };
-
-  // Request permissions when the component mounts
-  React.useEffect(() => {
-    requestPermissions();
-  }, []);
-
-  if (permission === null) {
-    return <Text>Requesting permission...</Text>;
-  }
-
-  if (permission === false) {
-    return <Text>Permission to access camera or media library is required.</Text>;
-  }
+  }, [response]);
 
   return (
     <View style={styles.container}>
-      <Text>Select or Take a Photo</Text>
-      <Button title="Select Image" onPress={pickImage} />
-      <Button title="Take a Photo" onPress={takePhoto} />
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+      <Button
+        disabled={!request}
+        title="Login with Google"
+        onPress={() => {
+          promptAsync();
+        }}
+      />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -81,5 +73,3 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 });
-
-export default SelectImageScreen;
