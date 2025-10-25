@@ -10,7 +10,3 @@
 </svelte:head>
 
 {@render children?.()}
-<style>
-  <h>
-  Hello</h>
-</style>
