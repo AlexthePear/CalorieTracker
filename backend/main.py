@@ -113,7 +113,7 @@ async def login(session: str = None, code: str = None):
         if len(response.data) != 0:
             uid = response.data[0].get("uid")
             user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-            return user_info.data[0]
+            return {"sid": session, "user_info": user_info.data[0]}
 
     if code == None:
         print(get_authorization_url())
@@ -134,7 +134,7 @@ async def login(session: str = None, code: str = None):
         supabase.table("Users").insert({
             "uid": uid, "username": response.get("name")}).execute()
     user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-    return user_info.data[0]
+    return {"sid": session, "user_info": user_info.data[0]}
 
 
 @app.post("/entry")
