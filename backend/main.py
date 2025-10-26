@@ -18,6 +18,8 @@ import os
 import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 
+# Version: 1.0 
+
 app = FastAPI()
 
 app.add_middleware(
