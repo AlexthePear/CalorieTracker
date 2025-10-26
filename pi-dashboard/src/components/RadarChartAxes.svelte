@@ -10,7 +10,7 @@
 	export let axisStrokeWidth: number = 1;
 	export let showLabels: boolean = true;
 	export let labelOffset: number = 30;
-	export let labelFontSize: number = 14;
+	export let labelFontSize: number = 22;
 
 	$: numMetrics = metrics.length;
 </script>

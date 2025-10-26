@@ -5,18 +5,18 @@
 	import RadarChartAxes from './RadarChartAxes.svelte';
 	import RadarChartLayer from './RadarChartLayer.svelte';
 
-	export let size: number = 500;
-	export let maxRadius: number = 200;
+	export let size: number = 360;
+	export let maxRadius: number = 120;
 	export let numCircles: number = 4;
 
 	let daily_data: Metric[] = [
-		{ metric_name: 'calories', metric_score: 812 },
+		{ metric_name: 'calories', metric_score: 990 },
 		{ metric_name: 'protein', metric_score: 42 },
 		{ metric_name: 'carbs', metric_score: 40 },
 		{ metric_name: 'fats', metric_score: 21 },
 		{ metric_name: 'sugar', metric_score: 4 },
 		{ metric_name: 'fiber', metric_score: 12 },
-		{ metric_name: 'satiety', metric_score: 10 }
+		{ metric_name: 'satiety', metric_score: 45 }
 	];
 
 	export let goalStrokeColor: string = 'rgb(59, 36, 246)';
