@@ -217,10 +217,6 @@ async def entry(
     
     tasks = [gemini() for i in range(10)]
     responses = await asyncio.gather(*tasks, return_exceptions = True)
-
-    for i, r in enumerate(responses):
-        print(i, type(r), repr(r), flush = True)
-
     results = [r for r in responses if isinstance(r, dict)]
     
     n = len(results)
@@ -366,8 +362,8 @@ async def update_goals(
     
     return {"updated": True}
 
-@app.get("/radar/{sid}")
-async def radar(sid: str):
+@app.get("/radar")
+async def radar(sid: str | None = Cookie(default=None)):
     uid = supabase.table("Sessions").select("uid").eq("sid", sid).execute().data[0]["uid"]
     both = supabase.table("Users").select("dailys", "goals").eq("uid", uid).execute().data[0]
     return both

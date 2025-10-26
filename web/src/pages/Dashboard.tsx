@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+const API = "https://calorie-tracker-backend-puce.vercel.app"
+
 interface NutritionGoal {
   name: string;
   current: number;
@@ -14,10 +16,14 @@ interface DashboardProps {
   onLogout: () => void;
 }
 
+const res = await fetch(`${API}/radar`, { credentials: 'include' });
+const data = await res.json();
+
+
 export function Dashboard({ username, onNavigate, onLogout }: DashboardProps) {
   // Mock data for MVP
   const goals: NutritionGoal[] = [
-    { name: "Calories", current: 1650, target: 2000, unit: "kcal" },
+    { name: "Calories", current: data["dailies"]["calories"], target: 2000, unit: "kcal" },
     { name: "Protein", current: 85, target: 120, unit: "g" },
     { name: "Carbs", current: 180, target: 250, unit: "g" },
     { name: "Fats", current: 45, target: 65, unit: "g" },
