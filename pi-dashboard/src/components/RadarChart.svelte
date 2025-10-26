@@ -22,7 +22,7 @@
 		{ metric_name: 'satiety', metric_score: 55 }
 	];
 	// Layer styling
-	export let goalStrokeColor: string = 'rgb(59, 130, 246)';
+	export let goalStrokeColor: string = 'rgb(160, 32, 240)';
 	export let goalFillColor: string = 'rgba(169, 169, 169, 0.5)';
 	export let dailyStrokeColor: string = 'rgb(34, 197, 94)';
 	export let dailyFillColor: string = 'rgba(34, 197, 94, 0.3)';
