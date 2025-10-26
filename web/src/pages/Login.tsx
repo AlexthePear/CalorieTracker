@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-const API = "http://localhost:8000"; // pick one host; use it everywhere
+const API = "https://calorie-tracker-backend-puce.vercel.app"; // pick one host; use it everywhere
 
 
 interface LoginProps {

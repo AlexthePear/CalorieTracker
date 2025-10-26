@@ -128,7 +128,7 @@ async def login(state: str, session: str = None, code: str = None):
             resp = RedirectResponse(url=state)
             resp.set_cookie(
                 key="sid", value=session,
-                httponly=True, samesite="Lax", secure=False, path="/",
+                httponly=True, samesite="none", secure=True, path="/",
             )
             return resp
 
@@ -155,8 +155,8 @@ async def login(state: str, session: str = None, code: str = None):
         key="sid",
         value=session,
         httponly=True,
-        samesite="Lax",   # or "None" only if you serve over HTTPS
-        secure=False,     # True only when you use HTTPS
+        samesite="none",   # or "None" only if you serve over HTTPS
+        secure=True,     # True only when you use HTTPS
         path="/",
     )
 

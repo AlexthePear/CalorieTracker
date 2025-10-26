@@ -7,7 +7,7 @@ import { UserProfile } from "./pages/UserProfile";
 import { PublicProfile } from "./pages/PublicProfile";
 import { Button } from "./components/ui/button";
 
-const API = "http://localhost:8000";
+const API = "https://calorie-tracker-backend-puce.vercel.app";
 
 type Page = "login" | "dashboard" | "leaderboards" | "profile" | "public-profile";
 
