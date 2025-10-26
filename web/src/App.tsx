@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
@@ -13,25 +13,51 @@ type Page = "login" | "dashboard" | "leaderboards" | "profile" | "public-profile
 const DEV_MODE = true;
 
 export function App() {
-  const [currentPage, setCurrentPage] = useState<Page>("login");
-  const [username, setUsername] = useState<string>("demo_user");
+  const [username, setUsername] = useState<string>("");
   const [viewingProfileUsername, setViewingProfileUsername] = useState<string>("");
+
+  // Get current page from URL hash
+  const getPageFromHash = (): Page => {
+    const hash = window.location.hash.slice(1); // Remove the #
+    if (!hash || hash === "/" || hash === "/login") return "login";
+    if (hash.startsWith("/dashboard")) return "dashboard";
+    if (hash.startsWith("/leaderboards")) return "leaderboards";
+    if (hash.startsWith("/profile/")) {
+      const username = hash.split("/")[2];
+      setViewingProfileUsername(username);
+      return "public-profile";
+    }
+    if (hash.startsWith("/profile")) return "profile";
+    return "login";
+  };
+
+  const [currentPage, setCurrentPage] = useState<Page>(getPageFromHash);
+
+  // Listen for hash changes
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentPage(getPageFromHash());
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   const handleLogin = (user: string) => {
     setUsername(user);
-    setCurrentPage("dashboard");
+    window.location.hash = "/dashboard";
   };
 
   const handleLogout = () => {
     setUsername("");
-    setCurrentPage("login");
+    window.location.hash = "/login";
   };
 
   const handleNavigate = (page: string, profileUsername?: string) => {
     if (page === "public-profile" && profileUsername) {
-      setViewingProfileUsername(profileUsername);
+      window.location.hash = `/profile/${profileUsername}`;
+    } else {
+      window.location.hash = `/${page}`;
     }
-    setCurrentPage(page as Page);
   };
 
   // Dev mode navigation panel
@@ -42,38 +68,46 @@ export function App() {
       <div className="fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-lg shadow-lg z-50">
         <div className="text-xs font-bold mb-2">DEV MODE - Quick Navigation</div>
         <div className="flex gap-2 flex-wrap max-w-sm">
-          <Button
-            size="sm"
-            variant={currentPage === "login" ? "default" : "outline"}
-            onClick={() => setCurrentPage("login")}
-            className={currentPage === "login" ? "" : "bg-white text-black hover:bg-gray-200"}
+          <a
+            href="#/login"
+            className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-9 px-3 ${
+              currentPage === "login"
+                ? "bg-white text-black"
+                : "bg-gray-700 text-white hover:bg-gray-600"
+            }`}
           >
             Login
-          </Button>
-          <Button
-            size="sm"
-            variant={currentPage === "dashboard" ? "default" : "outline"}
-            onClick={() => setCurrentPage("dashboard")}
-            className={currentPage === "dashboard" ? "" : "bg-white text-black hover:bg-gray-200"}
+          </a>
+          <a
+            href="#/dashboard"
+            className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-9 px-3 ${
+              currentPage === "dashboard"
+                ? "bg-white text-black"
+                : "bg-gray-700 text-white hover:bg-gray-600"
+            }`}
           >
             Dashboard
-          </Button>
-          <Button
-            size="sm"
-            variant={currentPage === "leaderboards" ? "default" : "outline"}
-            onClick={() => setCurrentPage("leaderboards")}
-            className={currentPage === "leaderboards" ? "" : "bg-white text-black hover:bg-gray-200"}
+          </a>
+          <a
+            href="#/leaderboards"
+            className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-9 px-3 ${
+              currentPage === "leaderboards"
+                ? "bg-white text-black"
+                : "bg-gray-700 text-white hover:bg-gray-600"
+            }`}
           >
             Leaderboards
-          </Button>
-          <Button
-            size="sm"
-            variant={currentPage === "profile" ? "default" : "outline"}
-            onClick={() => setCurrentPage("profile")}
-            className={currentPage === "profile" ? "" : "bg-white text-black hover:bg-gray-200"}
+          </a>
+          <a
+            href="#/profile"
+            className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors h-9 px-3 ${
+              currentPage === "profile"
+                ? "bg-white text-black"
+                : "bg-gray-700 text-white hover:bg-gray-600"
+            }`}
           >
             Profile
-          </Button>
+          </a>
         </div>
       </div>
     );
