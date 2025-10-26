@@ -35,11 +35,9 @@ export function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+    <div className="min-h-screen flex items-center min-w-screen/2 justify-center bg-gradient-to-br from-green-50 to-blue-50 p-4">
+      <Card className="w-screen max-w-md">
           <CardTitle className="text-3xl font-bold text-center">NutriTrack</CardTitle>
-        </CardHeader>
         <div className="p-6 pt-0">
           <Button onClick={handleLogin} className="w-full">
             Log In
