@@ -54,8 +54,9 @@ fiber (g),
 and satiety index (decimal number normalized from 1-10 with
 10 being the highest and 1 the lowest - levels of satiety)
 
-Return only valid JSON with no markdown, follow this format strictly.
-Here is an example output:
+Return only valid JSON with no markdown. ESPECIALLY DO NOT WRAP IN JSON MARKDOWN.
+
+Here is an example output, FOLLOW THIS FORMAT STRICTLY.:
 {
     "calories": int,
     "proteins": int,
@@ -200,22 +201,27 @@ async def image(
             )
 
             response_text = response.text.strip()
+            if response_text.startswith('```'):
+                response_text = response_text.split('\n', 1)[1]
+                response_text = response_text.rsplit('```', 1)[0]
+
             data = json.loads(response_text)
             return data
         
         except Exception as e:
             return (f"Error: {e}")
     
-    tasks = [gemini(prompt, img) for i in range(5)]
+    tasks = [gemini(prompt, img) for i in range(10)]
     responses = await asyncio.gather(*tasks)
+    results = [r for r in responses if r is not None]
 
-    avg_calories = sum(r['calories'] for r in responses) // 5
-    avg_fats = sum(r['fats'] for r in responses) // 5
-    avg_proteins = sum(r['proteins'] for r in responses) // 5
-    avg_carbs = sum(r['carbs'] for r in responses) // 5
-    avg_fibers = sum(r['fibers'] for r in responses) // 5
-    avg_sugars = sum(r['sugars'] for r in responses) // 5
-    avg_satiety = sum(r['satiety'] for r in responses) // 5
+    avg_calories = sum(r['calories'] for r in results) // 5
+    avg_fats = sum(r['fats'] for r in results) // 5
+    avg_proteins = sum(r['proteins'] for r in results) // 5
+    avg_carbs = sum(r['carbs'] for r in results) // 5
+    avg_fibers = sum(r['fibers'] for r in results) // 5
+    avg_sugars = sum(r['sugars'] for r in results) // 5
+    avg_satiety = sum(r['satiety'] for r in results) // 5
 
     nutrition = Macros(
         calories = avg_calories,
