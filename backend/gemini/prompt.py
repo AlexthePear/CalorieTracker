@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
-from google.genai import types
 from google import genai
+from google.genai import types
 import time
 import asyncio
 
