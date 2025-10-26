@@ -12,9 +12,9 @@
 <!-- Background concentric circles -->
 {#each Array(numCircles) as _, i}
 	<circle
-		cx={cx}
-		cy={cy}
-		r={maxRadius - i * circleStep}
+		{cx}
+		{cy}
+		r={maxRadius - (numCircles - i) * circleStep}
 		fill="none"
 		stroke={strokeColor}
 		stroke-width={strokeWidth}

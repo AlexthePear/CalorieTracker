@@ -23,7 +23,7 @@
 	];
 	// Layer styling
 	export let goalStrokeColor: string = 'rgb(59, 130, 246)';
-	export let goalFillColor: string = 'rgba(59, 130, 246, 0.3)';
+	export let goalFillColor: string = 'rgba(169, 169, 169, 0.5)';
 	export let dailyStrokeColor: string = 'rgb(34, 197, 94)';
 	export let dailyFillColor: string = 'rgba(34, 197, 94, 0.3)';
 
@@ -33,11 +33,17 @@
 
 <svg width={size} height={size}>
 	<!-- Background concentric circles -->
-	<RadarChartBackground {cx} {cy} {maxRadius} {numCircles} />
-
+	<RadarChartBackground {cx} {cy} {maxRadius} numCircles={4}></RadarChartBackground>
 	<!-- Radar chart axes -->
 	<RadarChartAxes metrics={goal_data} {cx} {cy} {maxRadius} />
-
+	<RadarChartLayer
+		metrics={goal_data}
+		{maxRadius}
+		{cx}
+		{cy}
+		strokeColor={goalStrokeColor}
+		fillColor={goalFillColor}
+	></RadarChartLayer>
 	<!-- Radar chart layer for daily data (if provided) -->
 	{#if daily_data}
 		<RadarChartLayer
