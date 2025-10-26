@@ -34,10 +34,11 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 
-def get_authorization_url():
+def get_authorization_url(state: str):
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "redirect_uri": GOOGLE_REDIRECT_URI,
+        "state": state,
         "response_type": "code",
         "scope": "openid profile email",
         "access_type": "offline",
@@ -45,10 +46,11 @@ def get_authorization_url():
     }
     return f"{AUTHORIZATION_URL}?{urlencode(params, quote_via=quote_plus)}"
 
-def get_access_token(code: str):
+def get_access_token(code: str, state: str):
     data = {
         "code": code,
         "client_id": GOOGLE_CLIENT_ID,
+        "state": state,
         "client_secret": GOOGLE_CLIENT_SECRET,
         "redirect_uri": GOOGLE_REDIRECT_URI,
         "grant_type": "authorization_code",
@@ -113,17 +115,16 @@ async def login(state: str, session: str = None, code: str = None):
         if len(response.data) != 0:
             uid = response.data[0].get("uid")
             user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-            return RedirectResponse(url = state, headers = {"sid": session, "user_info": user_info.data[0]});
+            return RedirectResponse(url = state, headers = {"sid": str(session), "user_info": json.dumps(user_info.data[0])});
 
     if code == None:
-        print(get_authorization_url())
-        return RedirectResponse(url=get_authorization_url())
+        return RedirectResponse(url=get_authorization_url(state))
     
     
-    access_token = get_access_token(code).get("access_token")
+    access_token = get_access_token(code, state).get("access_token")
     #return access_token
     response = get_user_info(access_token)
-    session = uuid1()
+    session = str(uuid1())
     uid = response.get("email")
 
     supabase.table("Sessions").insert({"sid": str(session), "uid": uid}).execute()
@@ -134,7 +135,7 @@ async def login(state: str, session: str = None, code: str = None):
         supabase.table("Users").insert({
             "uid": uid, "username": response.get("name")}).execute()
     user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-    return RedirectResponse(url = state, headers = {"sid": session, "user_info": user_info.data[0]});
+    return RedirectResponse(url = state, headers = {"sid": str(session), "user_info": json.dumps(user_info.data[0])});
 
 
 @app.post("/entry")
