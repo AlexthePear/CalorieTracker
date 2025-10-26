@@ -274,7 +274,7 @@ async def entry(
 
     async with httpx.AsyncClient() as http:
         try:
-            r = await http.post("http://127.0.0.1:8000/update_dailys", data=payload)
+            r = await http.post("https://calorie-tracker-backend-puce.vercel.app/update_dailys", data=payload)
             r.raise_for_status()
         except httpx.RequestError as e:
             raise HTTPException(status_code = 500, detail = f"Error updating dailys: {e}")
