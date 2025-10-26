@@ -106,14 +106,14 @@ async def root():
     return {"ok": True}
 
 @app.get("/oauth")
-async def login(session: str = None, code: str = None):
+async def login(session: str = None, code: str = None, state: str):     
     # TODO: Add session states
     if session != None:
         response = supabase.table("Sessions").select("*").eq("sid", session).execute()
         if len(response.data) != 0:
             uid = response.data[0].get("uid")
             user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-            return {"sid": session, "user_info": user_info.data[0]}
+            return RedirectResponse(url = state, headers = {"sid": session, "user_info": user_info.data[0]});
 
     if code == None:
         print(get_authorization_url())
@@ -134,7 +134,7 @@ async def login(session: str = None, code: str = None):
         supabase.table("Users").insert({
             "uid": uid, "username": response.get("name")}).execute()
     user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-    return {"sid": session, "user_info": user_info.data[0]}
+    return RedirectResponse(url = state, headers = {"sid": session, "user_info": user_info.data[0]});
 
 
 @app.post("/entry")
