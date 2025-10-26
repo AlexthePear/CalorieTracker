@@ -1,0 +1,9 @@
+{
+	"/": [],
+	"/dashboard": [
+		"src/routes/dashboard/+page.server.ts"
+	],
+	"/leaderboards": [],
+	"/profile": [],
+	"/profile/[username]": []
+}
