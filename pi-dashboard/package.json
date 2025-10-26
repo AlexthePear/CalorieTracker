@@ -1,9 +1,23 @@
 {
+  "name": "pi-dashboard",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {},
   "devDependencies": {
+    "@sveltejs/adapter-auto": "^3.0.0",
+    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@tailwindcss/vite": "^4.0.0",
     "autoprefixer": "^10.4.21",
     "daisyui": "^5.3.9",
     "postcss": "^8.5.6",
-    "tailwindcss": "3"
+    "svelte": "^5.0.0",
+    "tailwindcss": "3",
+    "vite": "^6.0.0"
   }
 }

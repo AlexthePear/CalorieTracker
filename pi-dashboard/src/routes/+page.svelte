@@ -24,10 +24,3 @@
 	<RadarChart />
 	<button on:click={getData}> get_goals</button>
 </div>
-
-<style lang="postcss">
-	@reference "tailwindcss";
-	:global(html) {
-		background-color: theme(--color-gray-600);
-	}
-</style>
