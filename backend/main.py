@@ -106,7 +106,7 @@ async def root():
     return {"ok": True}
 
 @app.get("/oauth")
-async def login(session: str = None, code: str = None, state: str):     
+async def login(state: str, session: str = None, code: str = None):     
     # TODO: Add session states
     if session != None:
         response = supabase.table("Sessions").select("*").eq("sid", session).execute()
