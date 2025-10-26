@@ -160,7 +160,7 @@ async def login(state: str, session: str = None, code: str = None):
         key="sid",
         value=session,
         httponly=True,
-        samesite="none",   # or "None" only if you serve over HTTPS
+        samesite="None",   # or "None" only if you serve over HTTPS
         secure=True,     # True only when you use HTTPS
         path="/",
     )
