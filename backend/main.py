@@ -18,7 +18,7 @@ import os
 import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 
-# Version: 1.1
+# Version: 1.2
 
 app = FastAPI()
 
