@@ -88,15 +88,24 @@ export function Leaderboards({ username, onNavigate, onLogout }: LeaderboardsPro
           <h1 className="text-2xl font-bold text-green-600">NutriTrack</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">Welcome, {username}</span>
-            <Button variant="outline" onClick={() => onNavigate("dashboard")}>
+            <a
+              href="#/dashboard"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
               Dashboard
-            </Button>
-            <Button variant="outline" onClick={() => onNavigate("leaderboards")}>
+            </a>
+            <a
+              href="#/leaderboards"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
               Leaderboards
-            </Button>
-            <Button variant="outline" onClick={() => onNavigate("profile")}>
+            </a>
+            <a
+              href="#/profile"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
               Profile
-            </Button>
+            </a>
             <Button variant="ghost" onClick={onLogout}>
               Logout
             </Button>
@@ -198,12 +207,12 @@ export function Leaderboards({ username, onNavigate, onLogout }: LeaderboardsPro
                           <span className="ml-2 text-xs text-green-600">(You)</span>
                         </>
                       ) : (
-                        <button
-                          onClick={() => onNavigate("public-profile", entry.username)}
+                        <a
+                          href={`#/profile/${entry.username}`}
                           className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                         >
                           {entry.username}
-                        </button>
+                        </a>
                       )}
                     </div>
                     <div className="text-right font-medium">{entry.score}</div>
