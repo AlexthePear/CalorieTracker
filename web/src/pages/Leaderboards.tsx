@@ -19,7 +19,7 @@ interface Group {
 
 interface LeaderboardsProps {
   username: string;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, profileUsername?: string) => void;
   onLogout: () => void;
 }
 
@@ -93,6 +93,9 @@ export function Leaderboards({ username, onNavigate, onLogout }: LeaderboardsPro
             </Button>
             <Button variant="outline" onClick={() => onNavigate("leaderboards")}>
               Leaderboards
+            </Button>
+            <Button variant="outline" onClick={() => onNavigate("profile")}>
+              Profile
             </Button>
             <Button variant="ghost" onClick={onLogout}>
               Logout
@@ -189,9 +192,18 @@ export function Leaderboards({ username, onNavigate, onLogout }: LeaderboardsPro
                       {getRankBadge(entry.rank)}
                     </div>
                     <div className={entry.username === username ? "font-bold" : ""}>
-                      {entry.username}
-                      {entry.username === username && (
-                        <span className="ml-2 text-xs text-green-600">(You)</span>
+                      {entry.username === username ? (
+                        <>
+                          {entry.username}
+                          <span className="ml-2 text-xs text-green-600">(You)</span>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => onNavigate("public-profile", entry.username)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                        >
+                          {entry.username}
+                        </button>
                       )}
                     </div>
                     <div className="text-right font-medium">{entry.score}</div>

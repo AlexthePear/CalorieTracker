@@ -10,7 +10,7 @@ interface NutritionGoal {
 
 interface DashboardProps {
   username: string;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, profileUsername?: string) => void;
   onLogout: () => void;
 }
 
@@ -48,6 +48,9 @@ export function Dashboard({ username, onNavigate, onLogout }: DashboardProps) {
             </Button>
             <Button variant="outline" onClick={() => onNavigate("leaderboards")}>
               Leaderboards
+            </Button>
+            <Button variant="outline" onClick={() => onNavigate("profile")}>
+              Profile
             </Button>
             <Button variant="ghost" onClick={onLogout}>
               Logout
