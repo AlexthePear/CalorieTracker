@@ -18,7 +18,7 @@ import os
 import asyncio
 from fastapi.middleware.cors import CORSMiddleware
 
-# Version: 1.0 
+# Version: 1.1
 
 app = FastAPI()
 
@@ -26,7 +26,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "https://localhost:5000"
     ],
     allow_credentials=True,
     allow_methods=["*"],
