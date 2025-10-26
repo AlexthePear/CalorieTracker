@@ -215,13 +215,15 @@ async def image(
     responses = await asyncio.gather(*tasks)
     results = [r for r in responses if r is not None]
 
-    avg_calories = sum(r['calories'] for r in results) // 5
-    avg_fats = sum(r['fats'] for r in results) // 5
-    avg_proteins = sum(r['proteins'] for r in results) // 5
-    avg_carbs = sum(r['carbs'] for r in results) // 5
-    avg_fibers = sum(r['fibers'] for r in results) // 5
-    avg_sugars = sum(r['sugars'] for r in results) // 5
-    avg_satiety = sum(r['satiety'] for r in results) // 5
+    n = len(results)
+
+    avg_calories = sum(r['calories'] for r in results) // n
+    avg_fats = sum(r['fats'] for r in results) // n
+    avg_proteins = sum(r['proteins'] for r in results) // n
+    avg_carbs = sum(r['carbs'] for r in results) // n
+    avg_fibers = sum(r['fibers'] for r in results) // n
+    avg_sugars = sum(r['sugars'] for r in results) // n
+    avg_satiety = sum(r['satiety'] for r in results) // n
 
     nutrition = Macros(
         calories = avg_calories,
