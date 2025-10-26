@@ -143,11 +143,11 @@ async def image(
 
     return {"Good"}
 
-@app.post("/test")
-async def test():
-    supabase.table("test").insert({"id": 12, "created_at": "potato"}).execute()
-    return {}
+# @app.post("/test")
+# async def test():
+#     supabase.table("test").insert({"id": 12, "created_at": "potato"}).execute()
+#     return {}
 
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+# @app.get("/items/{item_id}")
+# async def read_item(item_id: int, q: Union[str, None] = None):
+#     return {"item_id": item_id, "q": q}
