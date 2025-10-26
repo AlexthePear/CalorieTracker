@@ -365,3 +365,9 @@ async def update_goals(
     supabase.table("Users").update({"goals": goals}).eq("uid", uid).execute()
     
     return {"updated": True}
+
+@app.get("/radar/{sid}")
+async def radar(sid: str):
+    uid = supabase.table("Sessions").select("uid").eq("sid", sid).execute().data[0]["uid"]
+    both = supabase.table("Users").select("dailys", "goals").eq("uid", uid).execute().data[0]
+    return both
