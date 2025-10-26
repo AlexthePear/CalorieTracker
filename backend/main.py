@@ -1,7 +1,7 @@
 from typing import Union
 from fastapi.responses import RedirectResponse
 import json
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Cookie
 from pydantic import BaseModel
 from supabase import create_client, Client
 from datetime import datetime
@@ -15,8 +15,19 @@ from google.genai import types
 from uuid import uuid4
 import os
 import asyncio
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 load_dotenv()
 
@@ -32,40 +43,6 @@ USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
-
-
-def get_authorization_url(state: str):
-    params = {
-        "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
-        "state": state,
-        "response_type": "code",
-        "scope": "openid profile email",
-        "access_type": "offline",
-        "include_granted_scopes": "true",
-    }
-    return f"{AUTHORIZATION_URL}?{urlencode(params, quote_via=quote_plus)}"
-
-def get_access_token(code: str, state: str):
-    data = {
-        "code": code,
-        "client_id": GOOGLE_CLIENT_ID,
-        "state": state,
-        "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": GOOGLE_REDIRECT_URI,
-        "grant_type": "authorization_code",
-    }
-    response = requests.post(TOKEN_URL, data=data)
-    response.raise_for_status()  # Will raise an exception for 4xx or 5xx errors
-    return response.json()
-
-def get_user_info(access_token: str):
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-    }
-    response = requests.get(USERINFO_URL, headers=headers)
-    response.raise_for_status()
-    return response.json()
 
 prompt = """Analyze the given food image and do your best to estimate the following:
 calories (kcal),
@@ -103,39 +80,97 @@ class Macros(BaseModel):
     fibers : int
     satiety : int
 
+def get_authorization_url(state: str):
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "state": state,
+        "response_type": "code",
+        "scope": "openid profile email",
+        "access_type": "offline",
+        "include_granted_scopes": "true",
+    }
+    return f"{AUTHORIZATION_URL}?{urlencode(params, quote_via=quote_plus)}"
+
+def get_access_token(code: str):
+    data = {
+        "code": code,
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "grant_type": "authorization_code",
+    }
+    response = requests.post(TOKEN_URL, data=data)
+    response.raise_for_status()  # Will raise an exception for 4xx or 5xx errors
+    return response.json()
+
+def get_user_info(access_token: str):
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+    }
+    response = requests.get(USERINFO_URL, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
 @app.get("/")
 async def root():
     return {"ok": True}
 
 @app.get("/oauth")
 async def login(state: str, session: str = None, code: str = None):     
-    # TODO: Add session states
     if session != None:
         response = supabase.table("Sessions").select("*").eq("sid", session).execute()
         if len(response.data) != 0:
             uid = response.data[0].get("uid")
             user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-            return RedirectResponse(url = state, headers = {"sid": str(session), "user_info": json.dumps(user_info.data[0])});
+            resp = RedirectResponse(url=state)
+            resp.set_cookie(
+                key="sid", value=session,
+                httponly=True, samesite="Lax", secure=False, path="/",
+            )
+            return resp
 
     if code == None:
         return RedirectResponse(url=get_authorization_url(state))
     
     
-    access_token = get_access_token(code, state).get("access_token")
+    access_token = get_access_token(code).get("access_token")
     #return access_token
     response = get_user_info(access_token)
     session = str(uuid1())
     uid = response.get("email")
 
-    supabase.table("Sessions").insert({"sid": str(session), "uid": uid}).execute()
-    
-    
     user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
     if(len(user_info.data) == 0):
         supabase.table("Users").insert({
             "uid": uid, "username": response.get("name")}).execute()
     user_info = supabase.table("Users").select("*").eq("uid", uid).execute()
-    return RedirectResponse(url = state, headers = {"sid": str(session), "user_info": json.dumps(user_info.data[0])});
+    
+    supabase.table("Sessions").insert({"sid": str(session), "uid": uid}).execute()
+    
+    resp = RedirectResponse(url = state)
+    resp.set_cookie(
+        key="sid",
+        value=session,
+        httponly=True,
+        samesite="Lax",   # or "None" only if you serve over HTTPS
+        secure=False,     # True only when you use HTTPS
+        path="/",
+    )
+
+    return resp
+
+@app.get("/me")
+def me(sid: str | None = Cookie(default=None)):
+    if not sid:
+        raise HTTPException(status_code=401)
+    session = supabase.table("Sessions").select("*").eq("sid", sid).execute()
+    if not session.data:
+        raise HTTPException(status_code=401)
+    uid = session.data[0]["uid"]
+    user = supabase.table("Users").select("*").eq("uid", uid).execute().data[0]
+    return {"uid": uid, "username": user["username"]}
 
 
 @app.post("/entry")
