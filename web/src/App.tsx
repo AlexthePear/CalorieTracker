@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
@@ -6,6 +6,8 @@ import { Leaderboards } from "./pages/Leaderboards";
 import { UserProfile } from "./pages/UserProfile";
 import { PublicProfile } from "./pages/PublicProfile";
 import { Button } from "./components/ui/button";
+
+const API = "http://localhost:8000";
 
 type Page = "login" | "dashboard" | "leaderboards" | "profile" | "public-profile";
 
@@ -16,6 +18,19 @@ export function App() {
   const [currentPage, setCurrentPage] = useState<Page>("login");
   const [username, setUsername] = useState<string>("demo_user");
   const [viewingProfileUsername, setViewingProfileUsername] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/me`, { credentials: "include" });
+        if (r.ok) {
+          const me = await r.json();
+          setUsername(me.username);
+          setCurrentPage("dashboard");
+        }
+      } catch {}
+    })();
+  }, []);
 
   const handleLogin = (user: string) => {
     setUsername(user);
@@ -82,7 +97,7 @@ export function App() {
   if (currentPage === "login") {
     return (
       <>
-        <Login onLogin={handleLogin} />
+        <Login />
         <DevNav />
       </>
     );
