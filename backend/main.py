@@ -1,6 +1,7 @@
 from typing import Union
 from fastapi.responses import RedirectResponse
 import json
+import httpx
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Cookie
 from pydantic import BaseModel
 from supabase import create_client, Client
@@ -22,7 +23,8 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "http://localhost:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -175,7 +177,7 @@ def me(sid: str | None = Cookie(default=None)):
 
 
 @app.post("/entry")
-async def image(
+async def entry(
     img: UploadFile = File(...),
     uid: str = Form(...)
 ):
@@ -183,10 +185,10 @@ async def image(
     eid = str(uuid4())
     timestamp = str(datetime.now(ZoneInfo("America/Los_Angeles")))
 
-    async def gemini(prompt: str = Form(...), img: UploadFile = File(...)):
+    async def gemini():
         try:
             loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(
+            resp = await loop.run_in_executor(
                 None,
                 lambda: client.models.generate_content(
                     model = "gemini-2.5-flash-image",
@@ -196,26 +198,32 @@ async def image(
                             mime_type = 'image/jpeg',
                         ),
                         prompt
-                    ]
-                )
+                    ],
+                ),
             )
 
-            response_text = response.text.strip()
-            if response_text.startswith('```'):
-                response_text = response_text.split('\n', 1)[1]
-                response_text = response_text.rsplit('```', 1)[0]
-
-            data = json.loads(response_text)
-            return data
+            text = resp.text.strip()
+            if text.startswith('```'):
+                text = text.split('\n', 1)[1].rsplit("```", 1)[0]
+            return json.loads(text)
+        except Exception as e:
+            return e
         
         except Exception as e:
             return (f"Error: {e}")
     
-    tasks = [gemini(prompt, img) for i in range(10)]
-    responses = await asyncio.gather(*tasks)
-    results = [r for r in responses if r is not None]
+    tasks = [gemini() for i in range(10)]
+    responses = await asyncio.gather(*tasks, return_exceptions = True)
 
+    for i, r in enumerate(responses):
+        print(i, type(r), repr(r), flush = True)
+
+    results = [r for r in responses if isinstance(r, dict)]
+    
     n = len(results)
+
+    if (n == 0):
+        raise HTTPException(status_code = 502, detail = "No valid responses from Gemini API")
 
     avg_calories = sum(r['calories'] for r in results) // n
     avg_fats = sum(r['fats'] for r in results) // n
@@ -246,8 +254,7 @@ async def image(
         raise HTTPException(status_code = 500, detail = f"Upload failed: {e}")
     
     public_url = supabase.storage.from_(bucket).get_public_url(path)
-    
-    supabase.table("Entries").insert({
+    payload = {
         "eid": eid,
         "uid": uid,
         "image": public_url,
@@ -258,16 +265,100 @@ async def image(
         "sugars": nutrition.sugars,
         "fibers": nutrition.fibers,
         "timestamp": timestamp,
-        "satiety_index": nutrition.satiety
-    }).execute()
+        "satiety": nutrition.satiety
+    }
+    supabase.table("Entries").insert({**payload}).execute()
+
+    async with httpx.AsyncClient() as http:
+        try:
+            r = await http.post("http://127.0.0.1:8000/update_dailys", data=payload)
+            r.raise_for_status()
+        except httpx.RequestError as e:
+            raise HTTPException(status_code = 500, detail = f"Error updating dailys: {e}")
 
     return {"Good"}
 
-# @app.post("/test")
-# async def test():
-#     supabase.table("test").insert({"id": 12, "created_at": "potato"}).execute()
-#     return {}
+@app.post("/update_dailys")
+async def update_dailys(
+    uid: str = Form(...),
+    calories: int = Form(...),
+    proteins: int = Form(...),
+    carbs: int = Form(...),
+    fats: int = Form(...),
+    sugars: int = Form(...),
+    fibers: int = Form(...),
+    satiety: int = Form(...)
+):
+    curr_dailys = supabase.table("Users").select("dailys").eq("uid", uid).execute()
 
-# @app.get("/items/{item_id}")
-# async def read_item(item_id: int, q: Union[str, None] = None):
-#     return {"item_id": item_id, "q": q}
+    if (len(curr_dailys.data) == 0 or curr_dailys.data[0]["dailys"] is None):
+        dailys = {
+            "calories": calories,
+            "proteins": proteins,
+            "carbs": carbs,
+            "fats": fats,
+            "sugars": sugars,
+            "fibers": fibers,
+            "satiety": satiety
+        }
+        supabase.table("Users").update({"dailys": dailys}).eq("uid", uid).execute()
+        return {"updated": True}
+
+    curr_calories = int(curr_dailys.data[0]["dailys"]["calories"])
+    curr_proteins = int(curr_dailys.data[0]["dailys"]["proteins"])
+    curr_carbs = int(curr_dailys.data[0]["dailys"]["carbs"])
+    curr_fats = int(curr_dailys.data[0]["dailys"]["fats"])
+    curr_sugars = int(curr_dailys.data[0]["dailys"]["sugars"])
+    curr_fibers = int(curr_dailys.data[0]["dailys"]["fibers"])
+    curr_satiety = int(curr_dailys.data[0]["dailys"]["satiety"])
+
+    new_dailys = {
+        "calories": curr_calories + calories,
+        "proteins": curr_proteins + proteins,
+        "carbs": curr_carbs + carbs,
+        "fats": curr_fats + fats,
+        "sugars": curr_sugars + sugars,
+        "fibers": curr_fibers + fibers,
+        "satiety": (curr_satiety + satiety) // 2
+    }
+
+    supabase.table("Users").update({"dailys": new_dailys}).eq("uid", uid).execute()
+    return {"updated": True}
+
+@app.post("/update_goals")
+async def update_goals(
+    uid: str = Form(...),
+    calories: int = Form(-1),
+    proteins: int = Form(-1),
+    carbs: int = Form(-1),
+    fats: int = Form(-1),
+    sugars: int = Form(-1),
+    fibers: int = Form(-1),
+    satiety: int = Form(-1)
+):
+    curr_goals = supabase.table("Users").select("goals").eq("uid", uid).execute()
+    if (len(curr_goals.data) == 0):
+        goals = {
+            "calories": calories,
+            "proteins": proteins,
+            "carbs": carbs,
+            "fats": fats,
+            "sugars": sugars,
+            "fibers": fibers,
+            "satiety": satiety
+        }
+        supabase.table("Users").update({"goals": goals}).eq("uid", uid).execute()
+        return {"updated": True}
+    goals = {
+        "calories": calories if calories != -1 else curr_goals.data[0]["goals"]["calories"],
+        "proteins": proteins if proteins != -1 else curr_goals.data[0]["goals"]["proteins"],
+        "carbs": carbs if carbs != -1 else curr_goals.data[0]["goals"]["carbs"],
+        "fats": fats if fats != -1 else curr_goals.data[0]["goals"]["fats"],
+        "sugars": sugars if sugars != -1 else curr_goals.data[0]["goals"]["sugars"],
+        "fibers": fibers if fibers != -1 else curr_goals.data[0]["goals"]["fibers"],
+        "satiety": satiety if satiety != -1 else curr_goals.data[0]["goals"]["satiety"]
+    }
+
+    supabase.table("Users").update({"goals": goals}).eq("uid", uid).execute()
+    
+    return {"updated": True}

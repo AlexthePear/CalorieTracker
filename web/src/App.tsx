@@ -12,7 +12,7 @@ const API = "https://calorie-tracker-backend-puce.vercel.app";
 type Page = "login" | "dashboard" | "leaderboards" | "profile" | "public-profile";
 
 // Set to true for easy page navigation during development
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<Page>("login");
