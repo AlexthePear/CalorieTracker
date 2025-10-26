@@ -160,7 +160,7 @@ async def login(state: str, session: str = None, code: str = None):
         path="/",
     )
 
-    return resp
+    return resp 
 
 @app.get("/me")
 def me(sid: str | None = Cookie(default=None)):
