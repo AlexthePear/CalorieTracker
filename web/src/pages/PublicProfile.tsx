@@ -53,24 +53,15 @@ export function PublicProfile({ currentUsername, profileUsername, onNavigate, on
           <h1 className="text-2xl font-bold text-green-600">NutriTrack</h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600">Welcome, {currentUsername}</span>
-            <a
-              href="#/dashboard"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
+            <Button variant="outline" onClick={() => onNavigate("dashboard")}>
               Dashboard
-            </a>
-            <a
-              href="#/leaderboards"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
+            </Button>
+            <Button variant="outline" onClick={() => onNavigate("leaderboards")}>
               Leaderboards
-            </a>
-            <a
-              href="#/profile"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
+            </Button>
+            <Button variant="outline" onClick={() => onNavigate("profile")}>
               Profile
-            </a>
+            </Button>
             <Button variant="ghost" onClick={onLogout}>
               Logout
             </Button>
@@ -80,12 +71,9 @@ export function PublicProfile({ currentUsername, profileUsername, onNavigate, on
 
       <div className="container mx-auto p-6 space-y-6">
         {/* Back Button */}
-        <a
-          href="#/leaderboards"
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-        >
+        <Button variant="outline" onClick={() => onNavigate("leaderboards")}>
           ← Back to Leaderboards
-        </a>
+        </Button>
 
         {/* User Header */}
         <Card className="bg-gradient-to-r from-green-100 to-blue-100">
