@@ -2,7 +2,9 @@
 
 > Built for Cal Hacks. AI-powered meal logging from a single photo.
 
-[▶️ Demo Video](https://www.youtube.com/watch?v=U6-4qrMXV0M&feature=youtu.be)
+Watch the ▶️ Demo Video Below:
+
+[![Watch the video](https://img.youtube.com/vi/U6-4qrMXV0M/0.jpg)](https://www.youtube.com/watch?v=U6-4qrMXV0M)
 
 ## What it does
 
@@ -42,6 +44,8 @@
 - FastAPI (Python)
 - Gemini API (image analysis)
 
-**Data**
+**Database**
+- redis
+- pub/sub
 - Supabase
 - PostgreSQL
