@@ -45,7 +45,6 @@ Watch the ▶️ Demo Video Below:
 - Gemini API (image analysis)
 
 **Database**
-- redis
-- pub/sub
+- Redis
 - Supabase
 - PostgreSQL
